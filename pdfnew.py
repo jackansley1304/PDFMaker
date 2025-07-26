@@ -22,6 +22,9 @@ class ImageToPDFConverter:
         self.move_down_button = tk.Button(root, text="Move Down", command=self.move_down)
         self.move_down_button.pack(pady=2)
 
+        self.delete_button = tk.Button(root, text="Delete from List", command=self.delete_selected)
+        self.delete_button.pack(pady=2)
+
         self.convert_button = tk.Button(root, text="Convert to PDF", command=self.convert_to_pdf)
         self.convert_button.pack(pady=10)
 
@@ -47,6 +50,13 @@ class ImageToPDFConverter:
             idx = index[0]
             self.images[idx + 1], self.images[idx] = self.images[idx], self.images[idx + 1]
             self.update_listbox(idx, idx + 1)
+
+    def delete_selected(self):
+        index = self.listbox.curselection()
+        if index:
+            idx = index[0]
+            del self.images[idx]
+            self.listbox.delete(idx)
 
     def update_listbox(self, old_idx, new_idx):
         item = self.listbox.get(old_idx)
@@ -75,6 +85,14 @@ class ImageToPDFConverter:
         if save_path:
             pil_images[0].save(save_path, save_all=True, append_images=pil_images[1:])
             messagebox.showinfo("Success", f"PDF saved to:\n{save_path}")
+
+            # Ask to delete original images
+            if messagebox.askyesno("Delete Originals", "Do you want to permanently delete the original image files?"):
+                for img in self.images:
+                    try:
+                        os.remove(img)
+                    except Exception as e:
+                        messagebox.showwarning("Delete Error", f"Could not delete {os.path.basename(img)}:\n{e}")
 
 if __name__ == "__main__":
     root = tk.Tk()
